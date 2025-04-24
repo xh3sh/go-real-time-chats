@@ -1,0 +1,35 @@
+{{ define "short-poll" }}
+<div class="username-input-container">
+    <label for="username-input" class="username-label">Введите своё имя:</label>
+    <input id="username-input" type="text" class="username-input" placeholder="Имя пользователя..." required />
+    <input type="hidden" id="current-user" name="username" value="YourName" />
+    <button id="login-button" class="chat-login-button" hx-get="/short-poll-login" hx-target="#enable-container"
+        hx-swap="innerHTML"
+        onclick="document.getElementById('current-user').value = document.getElementById('username-input').value">
+        Войти
+    </button>
+</div>
+<div id="enable-container">
+    <!-- Чат контейнер -->
+</div>
+{{ end }}
+
+{{ define "enable-short-polling" }}
+<div class="chat-container">
+    <div class="chat-header">Short polling Чат</div>
+    <div class="chat-messages" id="chat-message" hx-get="/api/short-poll-messages" hx-trigger="every 2s"
+        hx-swap="beforeend" hx-target=".chat-messages" hx-include="#current-user"
+        hx-on="htmx:beforeRequest: document.getElementById('send-button').disabled=true; htmx:afterRequest: document.getElementById('send-button').disabled=false">
+        <!-- Сообщения будут загружаться сюда -->
+    </div>
+    <div class="chat-input-container">
+        <form id="response-form" hx-on::after-request="if(event.detail.successful) this.reset()">
+            <input type="text" class="chat-input" name="message" placeholder="Напишите своё сообщение..." required />
+            <button id="send-button" class="chat-send-button" hx-post="/api/short-poll-messages"
+                hx-include=".chat-input, #current-user" hx-swap="none" type="sumbit">
+                Отправить
+            </button>
+        </form>
+    </div>
+</div>
+{{ end }}

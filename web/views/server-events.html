@@ -1,0 +1,34 @@
+{{ define "sse" }}
+<div class="username-input-container">
+    <label for="username-input" class="username-label">Введите своё имя:</label>
+    <input id="username-input" type="text" class="chat-input username-input" name="username"
+        placeholder="Имя пользователя..." required />
+    <input type="hidden" id="current-user" name="username" />
+    <button id="login-button" class="chat-login-button" hx-get="/sse-login" hx-target="#enable-container"
+        hx-swap="innerHTML" hx-include="#username-input"
+        onclick="document.getElementById('current-user').value = document.getElementById('username-input').value;">
+        Войти
+    </button>
+</div>
+<div id="enable-container">
+    <!-- Чат контейнер -->
+</div>
+{{ end }}
+
+{{ define "sse-enable" }}
+<div class="chat-container" id="chat-container" hx-ext="sse" sse-connect="/api/sse?username={{ .Username }}"
+    sse-swap="message" hx-swap="beforeend" hx-target="#chat-message">
+    <div class="chat-header">{{ template "chat-header" "SSE Chat" }}</div>
+    <div class="chat-messages" id="chat-message">
+        <!-- Сообщения будут загружаться сюда -->
+    </div>
+    <form id="form" hx-on::after-request="if(event.detail.successful) this.reset()" hx-post="/api/sse-message"
+        hx-include="#message, #current-user" hx-swap="none">
+        <div class="chat-input-container">
+            <input type="text" id="message" name="content" class="chat-input" placeholder="Напишите своё сообщение..."
+                required />
+            <button id="send-button" class="chat-send-button" type="submit">Отправить</button>
+        </div>
+    </form>
+</div>
+{{ end }}

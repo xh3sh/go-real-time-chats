@@ -1,0 +1,33 @@
+{{ define "ws" }}
+<div class="username-input-container">
+    <label for="username-input" class="username-label">Введите своё имя:</label>
+    <input id="username-input" type="text" class="username-input" name="username" placeholder="Имя пользователя..."
+        oninput="document.getElementById('current-user').value = this.value" required />
+    <input type="hidden" id="current-user" name="currentUser" value="YourName" />
+    <button id="login-button" class="chat-login-button" hx-get="/ws-login" hx-target="#enable-container"
+        hx-swap="innerHTML" hx-include="#username-input">
+        Войти
+    </button>
+</div>
+<div id="enable-container">
+    <!-- Чат контейнер -->
+</div>
+{{ end }}
+
+{{ define "ws-enable" }}
+<div class="chat-container" id="chat-container" hx-ext="ws" ws-connect="/api/websocket?username={{ .Username }}">
+    <div class="chat-header">{{ template "chat-header" "WebSocket Chat" }}</div>
+    <div class="chat-messages" id="chat-message">
+        <!-- Сообщения будут загружаться сюда -->
+    </div>
+    <form id="form" ws-send="true" hx-include="#message" hx-on:submit="this.reset()">
+        <div class="chat-input-container">
+            <input type="text" id="message" name="content" class="chat-input" placeholder="Напишите своё сообщение..."
+                required />
+            <button id="send-button" class="chat-send-button" type="submit">
+                Отправить
+            </button>
+        </div>
+    </form>
+</div>
+{{ end }}

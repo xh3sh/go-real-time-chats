@@ -1,0 +1,7 @@
+{{ define "user-message" }}
+<div  id="chat-message" hx-swap-oob="beforeend:#chat-message" hx-swap="beforeend">
+    <div class="chat-message {{ if .IsSelf }}self{{ else }}other{{ end }}">
+        <span class='chat-username'>{{ .Username }}:</span> {{ .Content }}
+    </div>
+</div>
+{{ end }}

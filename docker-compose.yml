@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  go-real-time-chats:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: go-real-time-chats
+    container_name: go-real-time-chats
+    environment:
+      - TZ=UTC
+    networks:
+      - projects_network
+    restart: unless-stopped
+
+networks:
+  projects_network:
+    driver: bridge
+    name: projects_network
+    ipam:
+      config:
+        - subnet: 172.19.0.0/24
