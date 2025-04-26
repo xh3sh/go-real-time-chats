@@ -74,7 +74,9 @@ func (s *sseHandler) SSEHandler(c echo.Context) error {
 			return
 		}
 
-		htmlContent := strings.ReplaceAll(htmlBuffer.String(), "\r\n", "")
+		htmlContent := htmlBuffer.String()
+		htmlContent = strings.ReplaceAll(htmlContent, "\r\n", "\n") // Windows -> Unix
+		htmlContent = strings.ReplaceAll(htmlContent, "\n", "")     // Убираем все переводы строки
 		if _, err := c.Response().Write([]byte("data:" + htmlContent + "\n\n")); err != nil {
 			log.Println(err)
 		}
