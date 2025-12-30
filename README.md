@@ -34,52 +34,73 @@
 - Go 1.24.2 или выше
 - Docker (опционально)
 
+## Конфигурация
+
+Конфигурация приложения находится в файле `config/config.yaml`. Конфигурация содержит параметры сервера, информацию о пользователе и проектах.
+
 ### Шаги для запуска
 
 1. Клонируйте репозиторий:
 
     ```sh
-    git clone https://github.com/xh3sh/go-real-time-chats.git
-    cd go-real-time-chats
+    git clone https://github.com/zetsqio/go-htmx-example.git
+    cd go-htmx-example
     ```
 
-2. Установите зависимости:
+2. Создайте файл конфигурации:
+
+    Создайте config.yaml и заполните согласно шаблону из config-example
+
+3. Установите зависимости:
 
     ```sh
     go mod download
     ```
 
-3. Запустите приложение:
+4. Запустите приложение:
 
     ```sh
     go run ./cmd/app
     ```
 
-4. Откройте браузер и перейдите по адресу `http://localhost:80`.
+5. Откройте браузер и перейдите по адресу `http://localhost:80`.
 
 ### Запуск с использованием Docker
+1. Создайте файл конфигурации:
 
-1. Постройте Docker образ:
+    Создайте config.yaml и заполните согласно шаблону из config-example
 
-    ```sh
-    docker build -t go-real-time-chats .
-    ```
-
-2. Запустите контейнер:
+2. Постройте Docker образ:
 
     ```sh
-    docker run -p 80:80 go-real-time-chats
+    docker build -t go-htmx-example .
     ```
 
-3. Откройте браузер и перейдите по адресу `http://localhost:80`.
+3. Запустите контейнер:
+
+    ```sh
+    docker run -p 80:80 go-htmx-example
+    ```
+
+4. Откройте браузер и перейдите по адресу `http://localhost:80`.
 
 ### Запуск с использованием Docker Compose
+1. Создайте файл конфигурации:
 
-1. Запуск контейнера:
+    Создайте config.yaml и заполните согласно шаблону из config-example
+
+2. Создайте сеть:
+    docker network create projects-network
+
+3. Запуск контейнера:
 
     ```sh
     docker-compose up -d
     ```
+
+### Запуск с использованием Makefile и Docker
+1. Запуск проекта:
+    make up
 
 ## Лицензия
 
