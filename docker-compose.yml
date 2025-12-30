@@ -15,4 +15,4 @@ services:
 
 networks:
   projects-network:
-    external: true4
+    external: true
