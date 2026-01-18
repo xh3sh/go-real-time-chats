@@ -2,16 +2,19 @@ package route
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/xh3sh/go-real-time-chats/internal/repo"
 	"github.com/xh3sh/go-real-time-chats/internal/templates"
 )
 
 type RouteHandler struct {
 	echo *echo.Echo
+	repo *repo.RedisRepository
 }
 
-func New(e *echo.Echo) *RouteHandler {
+func New(e *echo.Echo, r *repo.RedisRepository) *RouteHandler {
 	return &RouteHandler{
 		echo: e,
+		repo: r,
 	}
 }
 
@@ -23,7 +26,7 @@ func (r *RouteHandler) InitRoute(tmpl *templates.Templates) error {
 		}
 	})
 
-	serverRoute(r.echo.Group("/api"))
+	serverRoute(r.echo.Group("/api"), r.repo)
 
 	webRoute(r.echo.Group(""))
 

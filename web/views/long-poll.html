@@ -16,11 +16,17 @@
 {{ end }}
 
 {{ define "enable-polling" }}
+<script>
+    function getLastMessageTimestamp() {
+        const lastMsg = document.querySelector('#chat-message .message-wrapper:last-child');
+        return lastMsg ? lastMsg.dataset.timestamp : null;
+    }
+</script>
 <div class="chat-container">
     <div class="chat-header">{{ template "chat-header" "Long polling Чат" }}</div>
-    <div class="chat-messages" id="chat-message" hx-get="/api/long-poll-messages" hx-trigger="every 200ms, htmx:afterRequest"
+    <div class="chat-messages" id="chat-message" hx-get="/api/long-poll-messages" hx-trigger="load, htmx:afterRequest"
         hx-swap="beforeend" hx-target=".chat-messages" hx-include="#current-user"
-        hx-on="htmx:beforeRequest: document.getElementById('send-button').disabled=true; htmx:afterRequest: document.getElementById('send-button').disabled=false">
+        hx-vals="js:{timestamp: getLastMessageTimestamp()}">
         <!-- Сообщения будут загружаться сюда -->
     </div>
     <div class="chat-input-container">

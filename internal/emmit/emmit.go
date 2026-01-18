@@ -8,9 +8,10 @@ import (
 )
 
 type Message struct {
-	Username string
-	Content  string
-	IsSelf   bool
+	Username  string
+	Content   string
+	Timestamp int64
+	IsSelf    bool
 }
 
 type Listener func(message Message)

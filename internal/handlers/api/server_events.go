@@ -6,18 +6,21 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/xh3sh/go-real-time-chats/internal/emmit"
+	"github.com/xh3sh/go-real-time-chats/internal/repo"
 	"github.com/xh3sh/go-real-time-chats/internal/templates"
 )
 
 type sseHandler struct {
+	repo    *repo.RedisRepository
 	emitter *emmit.Emitter
 }
 
-func NewSSEHandler(emmiter *emmit.Emitter) *sseHandler {
-	return &sseHandler{emitter: emmiter}
+func NewSSEHandler(repo *repo.RedisRepository, emmiter *emmit.Emitter) *sseHandler {
+	return &sseHandler{emitter: emmiter, repo: repo}
 }
 
 type Message struct {
@@ -65,7 +68,7 @@ func (s *sseHandler) SSEHandler(c echo.Context) error {
 
 	tmpl := templates.GetTemplates(c)
 
-	off := s.emitter.On("newMessage", func(msg emmit.Message) {
+	sendMsg := func(msg emmit.Message) {
 		msg.IsSelf = msg.Username == client.Username
 
 		var htmlBuffer bytes.Buffer
@@ -81,7 +84,16 @@ func (s *sseHandler) SSEHandler(c echo.Context) error {
 			log.Println(err)
 		}
 		c.Response().Flush()
-	})
+	}
+
+	messages, err := s.repo.GetMessages(c.Request().Context())
+	if err == nil {
+		for _, msg := range messages {
+			sendMsg(msg)
+		}
+	}
+
+	off := s.emitter.On("newMessage", sendMsg)
 
 	defer off()
 
@@ -100,8 +112,13 @@ func (s *sseHandler) SSEMessageHandler(c echo.Context) error {
 	}
 
 	msg := emmit.Message{
-		Username: username,
-		Content:  message,
+		Username:  username,
+		Content:   message,
+		Timestamp: time.Now().Unix(),
+	}
+
+	if err := s.repo.SaveMessage(c.Request().Context(), msg); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "could not save message"})
 	}
 
 	s.emitter.Emit("newMessage", msg)

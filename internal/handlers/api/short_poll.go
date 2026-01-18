@@ -2,48 +2,56 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/xh3sh/go-real-time-chats/internal/emmit"
+	"github.com/xh3sh/go-real-time-chats/internal/repo"
 )
 
-var shortPollMessages []MessageWithTimestamp
-var lastRequestTimestamps = make(map[string]time.Time)
-
-type MessageWithTimestamp struct {
-	emmit.Message
-	Timestamp time.Time
+type ShortPoolHandler struct {
+	repo    *repo.RedisRepository
+	emitter *emmit.Emitter
 }
 
-func GetShortPollMessages(c echo.Context) error {
+func NewShortPollHandler(repo *repo.RedisRepository, emitter *emmit.Emitter) *ShortPoolHandler {
+	return &ShortPoolHandler{
+		repo:    repo,
+		emitter: emitter,
+	}
+}
+
+func (s *ShortPoolHandler) GetShortPollMessages(c echo.Context) error {
 	currentUser := c.FormValue("username")
 	if currentUser == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "currentUser is required"})
 	}
 
-	// Get the last request timestamp for the user
-	lastTimestamp, exists := lastRequestTimestamps[currentUser]
-	if !exists {
-		lastTimestamp = time.Time{}
-	}
+	timestampStr := c.QueryParam("timestamp")
+	var messages []emmit.Message
+	var err error
 
-	lastRequestTimestamps[currentUser] = time.Now()
-
-	cleanupInactiveUsers()
-
-	cleanupOldMessages()
-
-	var filteredMessages []emmit.Message
-	for _, msg := range shortPollMessages {
-		if msg.Timestamp.After(lastTimestamp) {
-			msg.IsSelf = (msg.Username == currentUser)
-			filteredMessages = append(filteredMessages, msg.Message)
+	if timestampStr != "" && timestampStr != "null" {
+		timestamp, parseErr := strconv.ParseInt(timestampStr, 10, 64)
+		if parseErr != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid timestamp format"})
 		}
+		messages, err = s.repo.GetMessagesAfter(c.Request().Context(), timestamp)
+	} else {
+		messages, err = s.repo.GetMessages(c.Request().Context())
 	}
 
-	if len(filteredMessages) > 0 {
-		for _, msg := range filteredMessages {
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "could not retrieve messages"})
+	}
+
+	for i := range messages {
+		messages[i].IsSelf = (messages[i].Username == currentUser)
+	}
+
+	if len(messages) > 0 {
+		for _, msg := range messages {
 			if err := c.Render(http.StatusOK, "user-message", msg); err != nil {
 				return err
 			}
@@ -54,7 +62,7 @@ func GetShortPollMessages(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func PostShortPollMessage(c echo.Context) error {
+func (s *ShortPoolHandler) PostShortPollMessage(c echo.Context) error {
 	message := c.FormValue("message")
 	username := c.FormValue("username")
 
@@ -62,37 +70,20 @@ func PostShortPollMessage(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Username and message cannot be empty"})
 	}
 
-	msg := MessageWithTimestamp{
-		Message: emmit.Message{
-			Username: username,
-			Content:  message,
-		},
-		Timestamp: time.Now(),
+	msg := emmit.Message{
+		Username:  username,
+		Content:   message,
+		Timestamp: time.Now().Unix(),
 	}
 
-	shortPollMessages = append(shortPollMessages, msg)
+	if err := s.repo.SaveMessage(c.Request().Context(), msg); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "could not save message"})
+	}
 
-	cleanupInactiveUsers()
+	s.emitter.Emit("newMessage", msg)
 
 	return c.JSON(http.StatusOK, map[string]string{"message": message})
 }
 
-func cleanupOldMessages() {
-	threshold := time.Now().Add(-1 * time.Minute)
-	var updatedMessages []MessageWithTimestamp
-	for _, msg := range shortPollMessages {
-		if msg.Timestamp.After(threshold) {
-			updatedMessages = append(updatedMessages, msg)
-		}
-	}
-	shortPollMessages = updatedMessages
-}
 
-func cleanupInactiveUsers() {
-	threshold := time.Now().Add(-5 * time.Minute)
-	for user, lastRequest := range lastRequestTimestamps {
-		if lastRequest.Before(threshold) {
-			delete(lastRequestTimestamps, user)
-		}
-	}
-}
+

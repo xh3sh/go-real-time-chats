@@ -15,11 +15,18 @@
 {{ end }}
 
 {{ define "enable-short-polling" }}
+<script>
+    function getLastMessageTimestamp() {
+        const lastMsg = document.querySelector('#chat-message .message-wrapper:last-child');
+        return lastMsg ? lastMsg.dataset.timestamp : null;
+    }
+</script>
 <div class="chat-container">
     <div class="chat-header">Short polling Чат</div>
     <div class="chat-messages" id="chat-message" hx-get="/api/short-poll-messages" hx-trigger="every 2s"
-        hx-swap="beforeend" hx-target=".chat-messages" hx-include="#current-user"
-        hx-on="htmx:beforeRequest: document.getElementById('send-button').disabled=true; htmx:afterRequest: document.getElementById('send-button').disabled=false">
+        hx-swap="beforeend" hx-include="#current-user"
+        hx-vals="js:{timestamp: getLastMessageTimestamp()}"
+        hx-on="htmx:beforeRequest: document.getElementById('send-button').disabled=true, htmx:afterRequest: document.getElementById('send-button').disabled=false">
         <!-- Сообщения будут загружаться сюда -->
     </div>
     <div class="chat-input-container">
