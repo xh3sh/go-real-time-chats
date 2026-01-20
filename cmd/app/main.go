@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -18,8 +19,7 @@ const SERVER_PORT = ":80"
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		// handle error if .env file is not present
-		// usually fine in prod if envs are passed directly
+		log.Println("env файл не найден, используются стандартные параметры")
 	}
 
 	e := echo.New()
