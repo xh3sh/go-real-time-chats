@@ -12,16 +12,15 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/xh3sh/go-real-time-chats/internal/emmit"
-	"github.com/xh3sh/go-real-time-chats/internal/repo"
 )
 
 type websocketHandler struct {
-	repo    *repo.RedisRepository
-	emitter *emmit.Emitter
+	repo    MessageRepository
+	emitter EventEmitter
 }
 
-func NewWebsocketHandler(repo *repo.RedisRepository, emmiter *emmit.Emitter) *websocketHandler {
-	return &websocketHandler{repo: repo, emitter: emmiter}
+func NewWebsocketHandler(repo MessageRepository, emitter EventEmitter) *websocketHandler {
+	return &websocketHandler{repo: repo, emitter: emitter}
 }
 
 type Client struct {

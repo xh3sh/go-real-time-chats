@@ -10,17 +10,16 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/xh3sh/go-real-time-chats/internal/emmit"
-	"github.com/xh3sh/go-real-time-chats/internal/repo"
 	"github.com/xh3sh/go-real-time-chats/internal/templates"
 )
 
 type sseHandler struct {
-	repo    *repo.RedisRepository
-	emitter *emmit.Emitter
+	repo    MessageRepository
+	emitter EventEmitter
 }
 
-func NewSSEHandler(repo *repo.RedisRepository, emmiter *emmit.Emitter) *sseHandler {
-	return &sseHandler{emitter: emmiter, repo: repo}
+func NewSSEHandler(repo MessageRepository, emitter EventEmitter) *sseHandler {
+	return &sseHandler{emitter: emitter, repo: repo}
 }
 
 type Message struct {

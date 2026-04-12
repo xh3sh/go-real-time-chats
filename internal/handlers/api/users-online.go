@@ -12,7 +12,7 @@ import (
 const USERS_TICKER_TIME = 30
 
 // UsersOnlineTicker отправляет количество слушаетелй в UserOnline хэндлер
-func UsersOnlineTicker(emitter *emmit.Emitter) {
+func UsersOnlineTicker(emitter EventEmitter) {
 	ticker := time.NewTicker(USERS_TICKER_TIME * time.Second)
 
 	go func() {

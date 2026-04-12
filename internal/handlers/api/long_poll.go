@@ -7,16 +7,15 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/xh3sh/go-real-time-chats/internal/emmit"
-	"github.com/xh3sh/go-real-time-chats/internal/repo"
 )
 
 type longPollHandler struct {
-	repo    *repo.RedisRepository
-	emitter *emmit.Emitter
+	repo    MessageRepository
+	emitter EventEmitter
 }
 
-func NewLongPollHandler(repo *repo.RedisRepository, emmiter *emmit.Emitter) *longPollHandler {
-	return &longPollHandler{emitter: emmiter, repo: repo}
+func NewLongPollHandler(repo MessageRepository, emitter EventEmitter) *longPollHandler {
+	return &longPollHandler{emitter: emitter, repo: repo}
 }
 
 func (l *longPollHandler) GetMessages(c echo.Context) error {

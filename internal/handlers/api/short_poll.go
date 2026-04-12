@@ -7,15 +7,14 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/xh3sh/go-real-time-chats/internal/emmit"
-	"github.com/xh3sh/go-real-time-chats/internal/repo"
 )
 
 type ShortPoolHandler struct {
-	repo    *repo.RedisRepository
-	emitter *emmit.Emitter
+	repo    MessageRepository
+	emitter EventEmitter
 }
 
-func NewShortPollHandler(repo *repo.RedisRepository, emitter *emmit.Emitter) *ShortPoolHandler {
+func NewShortPollHandler(repo MessageRepository, emitter EventEmitter) *ShortPoolHandler {
 	return &ShortPoolHandler{
 		repo:    repo,
 		emitter: emitter,
