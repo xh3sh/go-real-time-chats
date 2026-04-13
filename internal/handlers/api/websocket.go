@@ -39,7 +39,9 @@ func (w *websocketHandler) WebSocketHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	username := c.QueryParam("username")
 	if username == "" {
@@ -71,7 +73,7 @@ func (w *websocketHandler) WebSocketHandler(c echo.Context) error {
 		htmlContent = strings.Replace(htmlContent, "class=\"message-wrapper\"", "hx-swap-oob=\"beforeend:#chat-message\" class=\"message-wrapper\"", 1)
 
 		if err := client.Conn.WriteMessage(websocket.TextMessage, []byte(htmlContent)); err != nil {
-			client.Conn.Close()
+			_ = client.Conn.Close()
 			clientsMux.Lock()
 			delete(clients, client.Conn)
 			clientsMux.Unlock()

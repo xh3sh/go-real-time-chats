@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://golangci-lint.run/jsonschema/golangci.jsonschema.json
+
+version: "2"
+
+# Форматтеры живут в собственном блоке
+formatters:
+  enable:
+    - gofmt
+
+linters:
+  default: none
+  enable:
+    # Базовые (входят в стандартный набор)
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck # В v2 этот линтер автоматически включает в себя проверки gosimple и unused!
+    
+    # Расширенные и очень полезные
+    - gocritic   
+    - gosec      
+    - bodyclose  
+    - revive     
+
+  # Настройки конкретных линтеров
+  settings:
+    revive:
+      rules:
+        - name: unused-parameter
+          disabled: true
+        - name: unexported-return
+          disabled: true
+
+  # Правила исключений (бывший exclude-rules)
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - errcheck 
+          - gosec    
+          - bodyclose
+
+run:
+  timeout: 5m
+  tests: true # Проверять и тестовые файлы

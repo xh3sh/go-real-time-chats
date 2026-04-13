@@ -83,6 +83,3 @@ func (s *ShortPoolHandler) PostShortPollMessage(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]string{"message": message})
 }
-
-
-

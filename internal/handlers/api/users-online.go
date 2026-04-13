@@ -16,11 +16,8 @@ func UsersOnlineTicker(emitter EventEmitter) {
 	ticker := time.NewTicker(USERS_TICKER_TIME * time.Second)
 
 	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				emitter.Emit("usersOnline", emmit.Message{Content: strconv.Itoa(emitter.ListenerCount())})
-			}
+		for range ticker.C {
+			emitter.Emit("usersOnline", emmit.Message{Content: strconv.Itoa(emitter.ListenerCount())})
 		}
 	}()
 }

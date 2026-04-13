@@ -49,7 +49,9 @@ func main() {
 	repo.StartCleanupZMessages(ctx)
 
 	routes := route.New(e, repo)
-	routes.InitRoute(tmpl)
+	if err := routes.InitRoute(tmpl); err != nil {
+		e.Logger.Fatalf("Failed to init routes: %v", err)
+	}
 
 	e.Logger.Fatal(e.Start(SERVER_PORT))
 }
